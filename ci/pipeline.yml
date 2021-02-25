@@ -1,0 +1,72 @@
+---
+resources:
+- name: repo
+  type: git
+  source:
+   uri: git@github.ibm.com:pjadhav/ConcourseDemo.git
+   branch: master
+   private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAulWi/+zYPSTfYgLDm+yWqDSz9U8CEs3SFU0UrIP98ExdVuOW
+      hFiQ0ZtfsUf2oaLFVdyjqyP8un1MxC9Yftggn9YzhZsmzAhkWbJzpJWJY4PbVNj2
+      6N6fzqejqW+GWn77zwxmjwEYWCfhGuykqO4d2mUw7OzVvCcgJ0pxJrb8jltp1KSO
+      xYsNu7CnMnGshK/IL2YHauAmv5ucD7o/fkTeCG4GW8P0SPWrzYvTtb47E7z4lls3
+      P1YReJniAR0XSs+qXWJxdvWho2bEDKBa0mDNk3jaYJVJ2qPR0DQYTwGGFIwrb7Sb
+      gHSLaMZahP2Dzxzrf1eNoJVv6RJW8DUXnLki9wIDAQABAoIBAFB+ZA64quUnA5Tc
+      atH1z1NUiRUEj3m+De4DwVWRI2bmJkA9yqzbcZwKybjUxJcosKSZzt5Eio2pSTtK
+      1KjfBqDlsJYb4xOq4GbbLxe/PX2O3XX20Bri6Rgl1Q6BzgFT78WOrtNB/tk+SQEP
+      j0YmryDEK/F9kgtYv4wZnW3DCLEZ0Phj6sdfpBpHHYPLVBuA6twFlbbgqaW1xMdF
+      CpimOutS0DD23AZjfD1MaVXc6L+mg/Yn9ZkPer+WzcecjHS7YXrsfWNxIMANPmY6
+      Rf4uwra5EdcRed9uwJBzPCvWiVor/hrnwd2QRz8HzFTCTUiR9eD5yheK2TEegpft
+      fHETBeECgYEA7OJZBM8YxN89rWfu5BmCMAJfXm/nQnJh/1ec55g2IeaMvHaBMpIQ
+      wsRx6aBcrzZgDYZbsTanRYbOEVgtVm3oADFcn2wg/04mt3oZ/UfYvDFI64tG9kw6
+      Eudr1LIo4pj6XxcQXlzMiMZzl6Ji+rtUpYtpUCaWENmJKU6jJzF0ITECgYEAyV8D
+      XFvvTQMoYv3NB/YWall02nlx9w+yV5k8g4f5BNZjJGhdyyup1JoEqwKZBB1j1IN/
+      aarr1bEOdFLwrNKGlVgx+xhz7sapCV35KC18usn4FPRvqEQ7gLkFo3GQFJskfa2Y
+      qqYurkiYTaLW/iHwx3xycuMbcQBLA6JY1TkwPKcCgYBzxsEZX5rMhgugGB8jLvB5
+      RH+WKX1O9Za99PVEIBm9AfChIA5PSCKW/upp9C24mQvjMFraR0sD6ToIMh+ekYMF
+      rRqG9JNAFNNJc40GRLpCaJgqP11EfccYfDEwuI7RCVG9bglbBWIWK2BNqVlVEH/z
+      lSq4uNM5kwi9vqhxPHN00QKBgQDFQcODB7PEluFLBx9/Ovr+Np8XHHwc7k1fLgZv
+      OhUfPftkQLAQQ7dbQXxtIGBP/ZI7LIz1L69RZt2n6U9Fm/yl8v0S4QM/1W7kdB+L
+      0fMq7omLzV5LUHuRPq1dS/M9nDQEwLaaA6waoZZABtHfo9O/NhLOo9XPvd+9sZyf
+      UiQEZQKBgEMpsh+Zcrs3GUwFv6Sq2DQh7smMb4O2DMY2L9If1K9g6O1MB/rU89K7
+      e5N0EJoighWqeBNzjGKrY85fSdFjIcPr8we9f8OpbQVPCYxwk1ALUY3Syxqt3Fvj
+      NOoeeyYCNC3jG9KNyWzTecNsAyp2gj2D8Bw9BWVMdmP7iPd0kRKk
+      -----END RSA PRIVATE KEY-----
+- name: non-prod
+  type: cf
+  source:
+    api: https://api.ng.bluemix.net
+    username: apikey
+    password: 1AgrcilsqM6TO1Zm7yuqZflPgC4YQ03Dsh2HtYOr194R
+    organization: pjadhav@us.ibm.com
+    space: dev
+    skip_cert_check: false
+- name: health-check-timer
+  type: time
+  source: {interval: 5m}
+
+jobs:
+- name: Deploy
+  serial: true
+  public: true
+  plan:
+  - get: repo
+    trigger: true
+  - task: build-code
+    file: repo/ci/build.yml
+  - put: non-prod
+    params:
+     manifest: build/manifest.yml
+
+- name: Health Check
+  serial: false
+  build_logs_to_retain: 5
+  plan:
+  - get: health-check-timer
+    trigger: true
+  - get: repo
+  - task: healthcheck
+    file: repo/healthcheck.yml
+
+     

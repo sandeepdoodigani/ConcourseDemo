@@ -1,0 +1,9 @@
+applications:
+- name: concourse-demo
+  hosts:
+    - concourse-demo
+  name: concourse-demo
+  domain: mybluemix.net
+  buildpack: liberty-for-java
+  instances: 1
+  memory: 512M
