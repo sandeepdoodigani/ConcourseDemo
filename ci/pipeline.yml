@@ -38,8 +38,8 @@ resources:
   source:
     api: https://api.ng.bluemix.net
     username: apikey
-    password: 1AgrcilsqM6TO1Zm7yuqZflPgC4YQ03Dsh2HtYOr194R
-    organization: pjadhav@us.ibm.com
+    password: S5Ls5bOl3ut7MqZl2PJkHjjsAbHIUM6hq3t5KH-brJP-
+    organization: venkanna.doodigani@gmail.com 
     space: dev
     skip_cert_check: false
 - name: health-check-timer
